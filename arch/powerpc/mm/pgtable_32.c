@@ -26,6 +26,11 @@
 #include <linux/vmalloc.h>
 #include <linux/init.h>
 #include <linux/highmem.h>
+<<<<<<< HEAD
+=======
+#include <linux/memblock.h>
+#include <linux/slab.h>
+>>>>>>> 95f72d1... lmb: rename to memblock
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -191,7 +196,12 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
 	 * Don't allow anybody to remap normal RAM that we're using.
 	 * mem_init() sets high_memory so only do the check after that.
 	 */
+<<<<<<< HEAD
 	if (mem_init_done && (p < virt_to_phys(high_memory))) {
+=======
+	if (mem_init_done && (p < virt_to_phys(high_memory)) &&
+	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
+>>>>>>> 95f72d1... lmb: rename to memblock
 		printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
 		       (unsigned long long)p, __builtin_return_address(0));
 		return NULL;
@@ -307,6 +317,33 @@ void __init mapin_ram(void)
 	}
 }
 
+<<<<<<< HEAD
+=======
+void __init mapin_ram(void)
+{
+	unsigned long s, top;
+
+#ifndef CONFIG_WII
+	top = total_lowmem;
+	s = mmu_mapin_ram(top);
+	__mapin_ram_chunk(s, top);
+#else
+	if (!wii_hole_size) {
+		s = mmu_mapin_ram(total_lowmem);
+		__mapin_ram_chunk(s, total_lowmem);
+	} else {
+		top = wii_hole_start;
+		s = mmu_mapin_ram(top);
+		__mapin_ram_chunk(s, top);
+
+		top = memblock_end_of_DRAM();
+		s = wii_mmu_mapin_mem2(top);
+		__mapin_ram_chunk(s, top);
+	}
+#endif
+}
+
+>>>>>>> 95f72d1... lmb: rename to memblock
 /* Scan the real Linux page tables and return a PTE pointer for
  * a virtual address in a context.
  * Returns true (1) if PTE was found, zero otherwise.  The pointer to

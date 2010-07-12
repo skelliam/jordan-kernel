@@ -30,7 +30,7 @@
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/platform_device.h>
-#include <linux/lmb.h>
+#include <linux/memblock.h>
 #include <asm/uaccess.h>
 #include <asm/io.h>
 #include <asm/page.h>
@@ -130,15 +130,53 @@ static void __init register_bootmem_low_pages(void)
 	/*
 	 * We are rounding up the start address of usable memory:
 	 */
+<<<<<<< HEAD
 	curr_pfn = PFN_UP(__MEMORY_START);
+=======
+	if (!LOADER_TYPE || !INITRD_START || !INITRD_SIZE)
+		goto disable;
+
+	start = INITRD_START + __MEMORY_START;
+	end = start + INITRD_SIZE;
+
+	if (unlikely(end <= start))
+		goto disable;
+	if (unlikely(start & ~PAGE_MASK)) {
+		pr_err("initrd must be page aligned\n");
+		goto disable;
+	}
+
+	if (unlikely(start < PAGE_OFFSET)) {
+		pr_err("initrd start < PAGE_OFFSET\n");
+		goto disable;
+	}
+
+	if (unlikely(end > memblock_end_of_DRAM())) {
+		pr_err("initrd extends beyond end of memory "
+		       "(0x%08lx > 0x%08lx)\ndisabling initrd\n",
+		       end, (unsigned long)memblock_end_of_DRAM());
+		goto disable;
+	}
+
+	/*
+	 * If we got this far inspite of the boot loader's best efforts
+	 * to the contrary, assume we actually have a valid initrd and
+	 * fix up the root dev.
+	 */
+	ROOT_DEV = Root_RAM0;
+>>>>>>> 95f72d1... lmb: rename to memblock
 
 	/*
 	 * ... and at the end of the usable range downwards:
 	 */
 	last_pfn = PFN_DOWN(__pa(memory_end));
 
+<<<<<<< HEAD
 	if (last_pfn > max_low_pfn)
 		last_pfn = max_low_pfn;
+=======
+	memblock_reserve(__pa(initrd_start), INITRD_SIZE);
+>>>>>>> 95f72d1... lmb: rename to memblock
 
 	pages = last_pfn - curr_pfn;
 	free_bootmem(PFN_PHYS(curr_pfn), PFN_PHYS(pages));

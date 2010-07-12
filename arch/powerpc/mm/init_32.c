@@ -30,7 +30,12 @@
 #include <linux/highmem.h>
 #include <linux/initrd.h>
 #include <linux/pagemap.h>
+<<<<<<< HEAD
 #include <linux/lmb.h>
+=======
+#include <linux/memblock.h>
+#include <linux/gfp.h>
+>>>>>>> 95f72d1... lmb: rename to memblock
 
 #include <asm/pgalloc.h>
 #include <asm/prom.h>
@@ -130,13 +135,20 @@ void __init MMU_init(void)
 	/* parse args from command line */
 	MMU_setup();
 
+<<<<<<< HEAD
 	if (lmb.memory.cnt > 1) {
 		lmb.memory.cnt = 1;
 		lmb_analyze();
+=======
+	if (memblock.memory.cnt > 1) {
+#ifndef CONFIG_WII
+		memblock.memory.cnt = 1;
+		memblock_analyze();
+>>>>>>> 95f72d1... lmb: rename to memblock
 		printk(KERN_WARNING "Only using first contiguous memory region");
 	}
 
-	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
+	total_lowmem = total_memory = memblock_end_of_DRAM() - memstart_addr;
 	lowmem_end_addr = memstart_addr + total_lowmem;
 
 #ifdef CONFIG_FSL_BOOKE
@@ -151,8 +163,8 @@ void __init MMU_init(void)
 		lowmem_end_addr = memstart_addr + total_lowmem;
 #ifndef CONFIG_HIGHMEM
 		total_memory = total_lowmem;
-		lmb_enforce_memory_limit(lowmem_end_addr);
-		lmb_analyze();
+		memblock_enforce_memory_limit(lowmem_end_addr);
+		memblock_analyze();
 #endif /* CONFIG_HIGHMEM */
 	}
 
@@ -190,7 +202,7 @@ void __init *early_get_page(void)
 	if (init_bootmem_done) {
 		p = alloc_bootmem_pages(PAGE_SIZE);
 	} else {
-		p = __va(lmb_alloc_base(PAGE_SIZE, PAGE_SIZE,
+		p = __va(memblock_alloc_base(PAGE_SIZE, PAGE_SIZE,
 					__initial_memory_limit_addr));
 	}
 	return p;

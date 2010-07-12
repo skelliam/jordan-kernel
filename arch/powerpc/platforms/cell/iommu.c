@@ -28,7 +28,12 @@
 #include <linux/notifier.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
+<<<<<<< HEAD
 #include <linux/lmb.h>
+=======
+#include <linux/slab.h>
+#include <linux/memblock.h>
+>>>>>>> 95f72d1... lmb: rename to memblock
 
 #include <asm/prom.h>
 #include <asm/iommu.h>
@@ -845,10 +850,10 @@ static int __init cell_iommu_init_disabled(void)
 	/* If we found a DMA window, we check if it's big enough to enclose
 	 * all of physical memory. If not, we force enable IOMMU
 	 */
-	if (np && size < lmb_end_of_DRAM()) {
+	if (np && size < memblock_end_of_DRAM()) {
 		printk(KERN_WARNING "iommu: force-enabled, dma window"
 		       " (%ldMB) smaller than total memory (%lldMB)\n",
-		       size >> 20, lmb_end_of_DRAM() >> 20);
+		       size >> 20, memblock_end_of_DRAM() >> 20);
 		return -ENODEV;
 	}
 
@@ -1064,7 +1069,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
 	}
 
 	fbase = _ALIGN_UP(fbase, 1 << IO_SEGMENT_SHIFT);
-	fsize = lmb_phys_mem_size();
+	fsize = memblock_phys_mem_size();
 
 	if ((fbase + fsize) <= 0x800000000)
 		hbase = 0; /* use the device tree window */
@@ -1169,7 +1174,7 @@ static int __init cell_iommu_init(void)
 	 * Note: should we make sure we have the IOMMU actually disabled ?
 	 */
 	if (iommu_is_off ||
-	    (!iommu_force_on && lmb_end_of_DRAM() <= 0x80000000ull))
+	    (!iommu_force_on && memblock_end_of_DRAM() <= 0x80000000ull))
 		if (cell_iommu_init_disabled() == 0)
 			goto bail;
 

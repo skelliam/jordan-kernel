@@ -5,7 +5,16 @@ mainmenu "Linux/Microblaze Kernel Configuration"
 
 config MICROBLAZE
 	def_bool y
+<<<<<<< HEAD
 	select HAVE_LMB
+=======
+	select HAVE_MEMBLOCK
+	select HAVE_FUNCTION_TRACER
+	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+	select HAVE_FUNCTION_GRAPH_TRACER
+	select HAVE_DYNAMIC_FTRACE
+	select HAVE_FTRACE_MCOUNT_RECORD
+>>>>>>> 95f72d1... lmb: rename to memblock
 	select USB_ARCH_HAS_EHCI
 	select ARCH_WANT_OPTIONAL_GPIOLIB
 

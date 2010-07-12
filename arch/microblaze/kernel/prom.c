@@ -29,7 +29,7 @@
 #include <linux/kexec.h>
 #include <linux/debugfs.h>
 #include <linux/irq.h>
-#include <linux/lmb.h>
+#include <linux/memblock.h>
 
 #include <asm/prom.h>
 #include <asm/page.h>
@@ -667,6 +667,7 @@ static int __init early_init_dt_scan_memory(unsigned long node,
  */
 static inline unsigned long phyp_dump_calculate_reserve_size(void)
 {
+<<<<<<< HEAD
 	unsigned long tmp;
 
 	if (phyp_dump_info->reserve_bootvar)
@@ -680,6 +681,9 @@ static inline unsigned long phyp_dump_calculate_reserve_size(void)
 	tmp = tmp & ~0x0FFFFFFFUL;
 
 	return (tmp > PHYP_DUMP_RMR_END ? tmp : PHYP_DUMP_RMR_END);
+=======
+	memblock_add(base, size);
+>>>>>>> 95f72d1... lmb: rename to memblock
 }
 
 /**
@@ -694,6 +698,7 @@ static inline unsigned long phyp_dump_calculate_reserve_size(void)
  */
 static void __init phyp_dump_reserve_mem(void)
 {
+<<<<<<< HEAD
 	unsigned long base, size;
 	unsigned long variable_reserve_size;
 
@@ -729,6 +734,9 @@ static void __init phyp_dump_reserve_mem(void)
 		phyp_dump_info->init_reserve_start = base;
 		phyp_dump_info->init_reserve_size = size;
 	}
+=======
+	return memblock_alloc(size, align);
+>>>>>>> 95f72d1... lmb: rename to memblock
 }
 #else
 static inline void __init phyp_dump_reserve_mem(void) {}
@@ -786,8 +794,8 @@ void __init early_init_devtree(void *params)
 	 */
 	of_scan_flat_dt(early_init_dt_scan_chosen, NULL);
 
-	/* Scan memory nodes and rebuild LMBs */
-	lmb_init();
+	/* Scan memory nodes and rebuild MEMBLOCKs */
+	memblock_init();
 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
 	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
 
@@ -795,9 +803,9 @@ void __init early_init_devtree(void *params)
 	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
 	parse_early_param();
 
-	lmb_analyze();
+	memblock_analyze();
 
-	pr_debug("Phys. mem: %lx\n", (unsigned long) lmb_phys_mem_size());
+	pr_debug("Phys. mem: %lx\n", (unsigned long) memblock_phys_mem_size());
 
 	pr_debug("Scanning CPUs ...\n");
 

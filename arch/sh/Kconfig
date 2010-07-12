@@ -9,8 +9,13 @@ config SUPERH
 	def_bool y
 	select EMBEDDED
 	select HAVE_CLK
+<<<<<<< HEAD
 	select HAVE_IDE
 	select HAVE_LMB
+=======
+	select HAVE_IDE if HAS_IOPORT
+	select HAVE_MEMBLOCK
+>>>>>>> 95f72d1... lmb: rename to memblock
 	select HAVE_OPROFILE
 	select HAVE_TRACE_CLOCK
 	select HAVE_TRACE_CLOCK_32_TO_64
