@@ -167,6 +167,25 @@ static int check_fbmem_region(int region_idx, struct omapfb_mem_region *rg,
 	return 0;
 }
 
+static int valid_sdram(unsigned long addr, unsigned long size)
+{
+	struct memblock_region res;
+
+	res.base = addr;
+	res.size = size;
+	return !memblock_find(&res) && res.base == addr && res.size == size;
+}
+
+static int reserve_sdram(unsigned long addr, unsigned long size)
+{
+	if (memblock_is_region_reserved(addr, size))
+		return -EBUSY;
+	if (memblock_reserve(addr, size))
+		return -ENOMEM;
+	return 0;
+}
+
+>>>>>>> e3239ff... memblock: Rename memblock_region to memblock_type and memblock_property to memblock_region
 /*
  * Called from map_io. We need to call to this early enough so that we
  * can reserve the fixed SDRAM regions before VM could get hold of them.
