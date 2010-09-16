@@ -42,6 +42,7 @@ obj-$(CONFIG_ARM_UNWIND)	+= unwind.o
 obj-$(CONFIG_HAVE_TCM)		+= tcm.o
 obj-$(CONFIG_OF)		+= prom.o
 obj-$(CONFIG_BOOTINFO)		+= bootinfo.o
+obj-$(CONFIG_SWP_EMULATE)	+= swp_emulate.o
 
 obj-$(CONFIG_CRUNCH)		+= crunch.o crunch-bits.o
 AFLAGS_crunch-bits.o		:= -Wa,-mcpu=ep9312
@@ -61,3 +62,4 @@ obj-$(CONFIG_DEBUG_LL)	+= debug.o
 obj-$(CONFIG_EARLY_PRINTK)     += early_printk.o
 
 extra-y := $(head-y) init_task.o vmlinux.lds
+
