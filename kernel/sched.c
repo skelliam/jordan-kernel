@@ -1,3 +1,6 @@
+#ifdef CONFIG_SCHED_BFS
+#include "sched_bfs.c"
+#else
 /*
  *  kernel/sched.c
  *
@@ -11343,3 +11346,4 @@ end:
 	mutex_unlock(&kernel_trace_mutex);
 }
 EXPORT_SYMBOL_GPL(set_kernel_trace_flag_all_tasks);
+#endif /* CONFIG_SCHED_BFS */
