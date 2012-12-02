@@ -396,7 +396,7 @@ static int proc_pid_stack(struct seq_file *m, struct pid_namespace *ns,
 static int proc_pid_schedstat(struct task_struct *task, char *buffer)
 {
 	return sprintf(buffer, "%llu %llu %lu\n",
-			(unsigned long long)task->sched_time,
+			(unsigned long long)task->se.sum_exec_runtime,
 			(unsigned long long)task->sched_info.run_delay,
 			task->sched_info.pcount);
 }
@@ -3234,3 +3234,4 @@ static const struct file_operations proc_task_operations = {
 	.read		= generic_read_dir,
 	.readdir	= proc_task_readdir,
 };
+

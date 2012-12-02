@@ -127,7 +127,7 @@ static void __exit_signal(struct task_struct *tsk)
 		sig->inblock += task_io_get_inblock(tsk);
 		sig->oublock += task_io_get_oublock(tsk);
 		task_io_accounting_add(&sig->ioac, &tsk->ioac);
-		sig->sum_sched_runtime += tsk->sched_time;
+		sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 		sig = NULL; /* Marker for below. */
 	}
 
@@ -149,10 +149,10 @@ static void __exit_signal(struct task_struct *tsk)
 		flush_sigqueue(&sig->shared_pending);
 		taskstats_tgid_free(sig);
 		/*
-		 * Make sure ->signal can't go away under grq.lock,
+		 * Make sure ->signal can't go away under rq->lock,
 		 * see account_group_exec_runtime().
 		 */
-		grq_unlock_wait();
+		task_rq_unlock_wait(tsk);
 		__cleanup_signal(sig);
 	}
 }
@@ -213,7 +213,6 @@ repeat:
 			leader->exit_state = EXIT_DEAD;
 	}
 
-	sched_exit(p);
 	write_unlock_irq(&tasklist_lock);
 	release_thread(p);
 	call_rcu(&p->rcu, delayed_put_task_struct);
@@ -1247,7 +1246,7 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 		 * group, which consolidates times for all threads in the
 		 * group including the group leader.
 		 */
-		//thread_group_times(p, &tgutime, &tgstime);
+		thread_group_times(p, &tgutime, &tgstime);
 		spin_lock_irq(&p->real_parent->sighand->siglock);
 		psig = p->real_parent->signal;
 		sig = p->signal;
@@ -1790,3 +1789,4 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 }
 
 #endif
+

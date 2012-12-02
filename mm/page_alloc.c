@@ -592,8 +592,6 @@ static void __free_pages_ok(struct page *page, unsigned int order)
 	int bad = 0;
 	int wasMlocked = __TestClearPageMlocked(page);
 
-	unsigned long index = 1UL << order;
-
 	kmemcheck_free_shadow(page, order);
 
 	trace_page_free(page, order);
@@ -608,10 +606,6 @@ static void __free_pages_ok(struct page *page, unsigned int order)
 		debug_check_no_obj_freed(page_address(page),
 					   PAGE_SIZE << order);
 	}
-
-	for (; index; --index)
-		sanitize_highpage(page + index - 1);
-
 	arch_free_page(page, order);
 	kernel_map_pages(page, 1 << order, 0);
 
@@ -1764,13 +1758,13 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
 
 static inline
 void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-		     enum zone_type high_zoneidx, struct task_struct *p)
+						enum zone_type high_zoneidx)
 {
 	struct zoneref *z;
 	struct zone *zone;
 
 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-		wakeup_kswapd(zone, order, p);
+		wakeup_kswapd(zone, order);
 }
 
 static inline int
@@ -1852,7 +1846,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 		goto nopage;
 
 restart:
-	wake_all_kswapd(order, zonelist, high_zoneidx, p);
+	wake_all_kswapd(order, zonelist, high_zoneidx);
 
 	/*
 	 * OK, we're below the kswapd watermark and have kicked background
@@ -5138,3 +5132,4 @@ __offline_isolated_pages(unsigned long start_pfn, unsigned long end_pfn)
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 #endif
+
