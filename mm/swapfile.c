@@ -2190,19 +2190,19 @@ int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
 	pgoff_t base, end;
 	int nr_pages = 0;
 
-	if (!our_page_cluster)  /* no readahead */
+	if (!our_page_cluster)	/* no readahead */
 		return 0;
 
 	si = &swap_info[swp_type(entry)];
 	target = swp_offset(entry);
 	base = (target >> our_page_cluster) << our_page_cluster;
 	end = base + (1 << our_page_cluster);
-	if (!base)    /* first page is swap header */
+	if (!base)		/* first page is swap header */
 		base++;
 
 	spin_lock(&swap_lock);
-	if (end > si->max)  /* don't go beyond end of map */
-	end = si->max;
+	if (end > si->max)	/* don't go beyond end of map */
+		end = si->max;
 
 	/* Count contiguous allocated slots above our target */
 	for (toff = target; ++toff < end; nr_pages++) {
@@ -2228,7 +2228,7 @@ int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
 	 */
 	*offset = ++toff;
 	return nr_pages? ++nr_pages: 0;
-	}
+}
 
 void ltt_dump_swap_files(void *call_data)
 {
