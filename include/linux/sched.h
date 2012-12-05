@@ -1240,21 +1240,18 @@ struct task_struct {
 	int prio, static_prio, normal_prio;
 	unsigned int rt_priority;
 #ifdef CONFIG_SCHED_BFS
-	int time_slice;
-	u64 deadline;
+	int time_slice, first_time_slice;
+	unsigned long deadline;
 	struct list_head run_list;
 	u64 last_ran;
 	u64 sched_time; /* sched_clock time spent running */
-#ifdef CONFIG_SMP
-	int sticky; /* Soft affined flag */
-#endif
+
 	unsigned long rt_timeout;
-// #else /* CONFIG_SCHED_BFS */
-#endif
+#else /* CONFIG_SCHED_BFS */
 	const struct sched_class *sched_class;
 	struct sched_entity se;
 	struct sched_rt_entity rt;
-// #endif
+#endif
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	/* list of struct preempt_notifier: */
@@ -1575,8 +1572,6 @@ struct task_struct {
 #ifdef CONFIG_SCHED_BFS
 extern int grunqueue_is_locked(void);
 extern void grq_unlock_wait(void);
-extern void cpu_scaling(int cpu);
-extern void cpu_nonscaling(int cpu);
 #define tsk_seruntime(t)		((t)->sched_time)
 #define tsk_rttimeout(t)		((t)->rt_timeout)
 #define task_rq_unlock_wait(tsk)	grq_unlock_wait()
@@ -1594,7 +1589,7 @@ static inline void tsk_cpus_current(struct task_struct *p)
 
 static inline void print_scheduler_version(void)
 {
-	printk(KERN_INFO"BFS CPU scheduler v0.401 by Con Kolivas.\n");
+	printk(KERN_INFO"BFS CPU scheduler v0.318 by Con Kolivas.\n");
 }
 
 static inline int iso_task(struct task_struct *p)
@@ -1604,12 +1599,6 @@ static inline int iso_task(struct task_struct *p)
 #else
 extern int runqueue_is_locked(int cpu);
 extern void task_rq_unlock_wait(struct task_struct *p);
-static inline void cpu_scaling(int cpu)
-{
-}
-static inline void cpu_nonscaling(int cpu)
-{
-}
 #define tsk_seruntime(t)	((t)->se.sum_exec_runtime)
 #define tsk_rttimeout(t)	((t)->rt.timeout)
 
