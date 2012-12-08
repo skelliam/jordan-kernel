@@ -1492,12 +1492,6 @@ static enum hrtimer_restart hrtimer_wakeup(struct hrtimer *timer)
 	struct hrtimer_sleeper *t =
 		container_of(timer, struct hrtimer_sleeper, timer);
 	struct task_struct *task = t->task;
-	struct hrtimer_clock_base *base;
-	unsigned long flags;
-
-	base = lock_hrtimer_base(timer, &flags);
-	t->elapsed = ktime_sub(base->get_time(), t->elapsed);
-	unlock_hrtimer_base(timer, &flags);
 
 	t->task = NULL;
 	if (task)
@@ -1508,13 +1502,6 @@ static enum hrtimer_restart hrtimer_wakeup(struct hrtimer *timer)
 
 void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, struct task_struct *task)
 {
-	struct hrtimer_clock_base *base;
-	unsigned long flags;
-
-	base = lock_hrtimer_base(&sl->timer, &flags);
-	sl->elapsed = base->get_time();
-	unlock_hrtimer_base(&sl->timer, &flags);
-
 	sl->timer.function = hrtimer_wakeup;
 	sl->task = task;
 }
@@ -1777,8 +1764,6 @@ void __init hrtimers_init(void)
  * @expires:	timeout value (ktime_t)
  * @delta:	slack in expires timeout (ktime_t)
  * @mode:	timer mode, HRTIMER_MODE_ABS or HRTIMER_MODE_REL
- * @elapsed:    pointer to unsigned long variable where to store
- *         the time actually slept in timeout (usecs)
  *
  * Make the current task sleep until the given expiry time has
  * elapsed. The routine will return immediately unless
@@ -1803,7 +1788,7 @@ void __init hrtimers_init(void)
  * Returns 0 when the timer has expired otherwise -EINTR
  */
 int __sched schedule_hrtimeout_range(ktime_t *expires, unsigned long delta,
-			       const enum hrtimer_mode mode, unsigned long *elapsed)
+			       const enum hrtimer_mode mode)
 {
 	struct hrtimer_sleeper t;
 
@@ -1836,9 +1821,6 @@ int __sched schedule_hrtimeout_range(ktime_t *expires, unsigned long delta,
 
 	if (likely(t.task))
 		schedule();
-
-	if (elapsed)
-		*elapsed = ktime_to_us(t.elapsed);
 
 	hrtimer_cancel(&t.timer);
 	destroy_hrtimer_on_stack(&t.timer);
@@ -1874,6 +1856,6 @@ EXPORT_SYMBOL_GPL(schedule_hrtimeout_range);
 int __sched schedule_hrtimeout(ktime_t *expires,
 			       const enum hrtimer_mode mode)
 {
-	return schedule_hrtimeout_range(expires, 0, mode, NULL);
+	return schedule_hrtimeout_range(expires, 0, mode);
 }
 EXPORT_SYMBOL_GPL(schedule_hrtimeout);
