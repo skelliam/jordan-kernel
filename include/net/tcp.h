@@ -400,7 +400,9 @@ extern void			tcp_enter_frto(struct sock *sk);
 extern void			tcp_enter_loss(struct sock *sk, int how);
 extern void			tcp_clear_retrans(struct tcp_sock *tp);
 extern void			tcp_update_metrics(struct sock *sk);
-
+extern void 			tcp_init_metrics(struct sock *sk);
+extern bool 			tcp_peer_is_proven(struct request_sock *req, struct dst_entry *dst);
+extern void 			tcp_disable_fack(struct tcp_sock *tp);
 extern void			tcp_close(struct sock *sk, 
 					  long timeout);
 extern unsigned int		tcp_poll(struct file * file, struct socket *sock, struct poll_table_struct *wait);
@@ -563,6 +565,8 @@ static inline u32 __tcp_set_rto(const struct tcp_sock *tp)
 {
 	return (tp->srtt >> 3) + tp->rttvar;
 }
+
+extern void tcp_set_rto(struct sock *sk);
 
 static inline void __tcp_fast_path_on(struct tcp_sock *tp, u32 snd_wnd)
 {
