@@ -190,6 +190,13 @@ static int strategy_allowed_congestion_control(ctl_table *table,
 
 static struct ctl_table ipv4_table[] = {
 	{
+		.procname       = "tcp_fastopen",
+		.data           = &sysctl_tcp_fastopen,
+		.maxlen         = sizeof(int),
+		.mode           = 0644,
+		.proc_handler   = proc_dointvec,
+	},	
+	{
 		.ctl_name	= NET_IPV4_TCP_TIMESTAMPS,
 		.procname	= "tcp_timestamps",
 		.data		= &sysctl_tcp_timestamps,
