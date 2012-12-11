@@ -30,3 +30,4 @@
 #if CRC_BE_BITS > 8 || CRC_BE_BITS < 1 || CRC_BE_BITS & CRC_BE_BITS-1
 # error CRC_BE_BITS must be a power of 2 between 1 and 8
 #endif
+
