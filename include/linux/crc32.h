@@ -25,3 +25,4 @@ extern u32  crc32_be(u32 crc, unsigned char const *p, size_t len);
 #define ether_crc_le(length, data) crc32_le(~0, data, length)
 
 #endif /* _LINUX_CRC32_H */
+
