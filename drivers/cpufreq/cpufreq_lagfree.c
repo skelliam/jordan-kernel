@@ -35,7 +35,7 @@
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_FREQUENCY_UP_THRESHOLD				(65)
+#define DEF_FREQUENCY_UP_THRESHOLD				(60)
 #define DEF_FREQUENCY_DOWN_THRESHOLD				(20)
 #define FREQ_STEP_DOWN 						(160000)
 #define FREQ_SLEEP_MAX 						(230400)

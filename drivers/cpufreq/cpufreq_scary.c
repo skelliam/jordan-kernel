@@ -26,8 +26,8 @@
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_FREQUENCY_UP_THRESHOLD		(65)
-#define DEF_FREQUENCY_DOWN_THRESHOLD		(20)
+#define DEF_FREQUENCY_UP_THRESHOLD		(75)
+#define DEF_FREQUENCY_DOWN_THRESHOLD		(30)
 #define DEFAULT_SLEEP_MAX_FREQ 245000
 #define DEFAULT_SLEEP_MIN_FREQ 96000
 #define DEFAULT_SLEEP_PREV_FREQ 128000 //This is so that if there are any issues resulting in sleep_prev_freq getting set, there will be a backup freq

@@ -141,7 +141,7 @@ static unsigned int ramp_down_step;
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 80
+#define DEFAULT_MAX_CPU_LOAD 85
 static unsigned long max_cpu_load;
 
 #define DEFAULT_X_CPU_LOAD 85
@@ -150,10 +150,10 @@ static unsigned long x_cpu_load;
 /*
  * CPU freq will be decreased if measured load < min_cpu_load;
  */
-#define DEFAULT_MIN_CPU_LOAD 30
+#define DEFAULT_MIN_CPU_LOAD 40
 static unsigned long min_cpu_load;
 
-#define RAPID_MIN_CPU_LOAD 10
+#define RAPID_MIN_CPU_LOAD 20
 static unsigned long rapid_min_cpu_load;
 
 
