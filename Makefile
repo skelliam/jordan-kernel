@@ -1045,11 +1045,7 @@ define filechk_utsrelease.h
 	  exit 1;                                                         \
 	fi;                                                               \
 	(echo \#define KERNEL_VER_NOSCM \"$(KERNEL_VER_NOSCM)\";          \
-<<<<<<< HEAD
-	echo \#define UTS_RELEASE \"$(KERNEL_VER_NOSCM)-JellyX\";)
-=======
 	echo \#define UTS_RELEASE \"$(KERNELRELEASE)\";)
->>>>>>> dc5d6f0e50f19728650a372c06d9f180e3761eac
 endef
 
 define filechk_version.h
@@ -1609,3 +1605,4 @@ FORCE:
 # Declare the contents of the .PHONY variable as phony.  We keep that
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
+
