@@ -1,8 +1,4 @@
-# force some config for the defy
-
-CONFIG_SGX_REV125 ?= y
-CONFIG_SGX_530_BUILD_RELEASE ?= y
-
+#
 ccflags-y = -DLINUX -D__linux__ -Idrivers/gpu/pvr \
 	-DANDROID \
 	-DPVR_BUILD_DIR="\"omap_sgx_android\"" \
@@ -44,7 +40,7 @@ ccflags-$(CONFIG_SGX540) +=  -Idrivers/gpu/pvr/omap4  -Idrivers/gpu/pvr/sgx \
 ccflags-$(CONFIG_SGX_REV110) += -DSGX_CORE_REV=110
 ccflags-$(CONFIG_SGX_REV120) += -DSGX_CORE_REV=120
 
-ccflags-y +=  -Idrivers/gpu/pvr/omap3  -Idrivers/gpu/pvr/sgx \
+ccflags-$(CONFIG_SGX530) +=  -Idrivers/gpu/pvr/omap3  -Idrivers/gpu/pvr/sgx \
 	-DSGX530 -DSUPPORT_SGX530
 
 ccflags-$(CONFIG_SGX_REV125) += -DSGX_CORE_REV=125
@@ -125,7 +121,7 @@ pvr540-$(CONFIG_SGX540) := \
 	omap4/sysconfig.o \
 	omap4/sysutils.o
 
-pvr530-y := \
+pvr530-$(CONFIG_SGX530) := \
 	omap3/sysconfig.o \
 	omap3/sysutils.o
 
@@ -160,6 +156,3 @@ obj-$(CONFIG_SGX530) := pvr_common.o sgx.o omaplfb.o pvr530.o
 obj-$(CONFIG_VIRTUAL_DISPLAY_SUPPORT) := pvr_common.o sgx.o \
 	sgx_displayclass.o pvr540.o
 obj-$(CONFIG_SGX_PDUMP) += dbgdrv.o
-
-
-
