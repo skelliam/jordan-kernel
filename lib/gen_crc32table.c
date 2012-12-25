@@ -4,11 +4,20 @@
 
 #define ENTRIES_PER_LINE 4
 
+#if CRC_LE_BITS <= 8
 #define LE_TABLE_SIZE (1 << CRC_LE_BITS)
-#define BE_TABLE_SIZE (1 << CRC_BE_BITS)
+#else
+#define LE_TABLE_SIZE 256
+#endif
 
-static uint32_t crc32table_le[4][LE_TABLE_SIZE];
-static uint32_t crc32table_be[4][BE_TABLE_SIZE];
+#if CRC_BE_BITS <= 8
+#define BE_TABLE_SIZE (1 << CRC_BE_BITS)
+#else
+#define BE_TABLE_SIZE 256
+#endif
+
+static uint32_t crc32table_le[4][256];
+static uint32_t crc32table_be[4][256];
 
 /**
  * crc32init_le() - allocate and initialize LE table data
@@ -24,7 +33,7 @@ static void crc32init_le(void)
 
 	crc32table_le[0][0] = 0;
 
-	for (i = 1 << (CRC_LE_BITS - 1); i; i >>= 1) {
+	for (i = LE_TABLE_SIZE >> 1; i; i >>= 1) {
 		crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY_LE : 0);
 		for (j = 0; j < LE_TABLE_SIZE; j += 2 * i)
 			crc32table_le[0][i + j] = crc ^ crc32table_le[0][j];
@@ -62,7 +71,7 @@ static void crc32init_be(void)
 	}
 }
 
-static void output_table(uint32_t table[4][256], int len, char *trans)
+static void output_table(uint32_t (*table)[256], int len, char *trans)
 {
 	int i, j;
 
@@ -97,3 +106,4 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
