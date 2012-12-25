@@ -970,7 +970,7 @@ static void __init mapphone_als_init(void)
 	gpio_direction_input(lm3530_int_gpio);
 	omap_cfg_reg(AC27_34XX_GPIO92);
 }
-
+#ifndef CONFIG_KOBE_BOARD
 static struct vkey mapphone_touch_vkeys[] = {
 	{
 		.code		= KEY_BACK,
@@ -1001,7 +1001,31 @@ static struct vkey mapphone_touch_vkeys[] = {
 		.height		= 57,
 	},
 };
-
+#else
+static struct vkey mapphone_touch_vkeys[] = {
+	{
+		.code		= KEY_BACK,
+		.center_x	= 376,
+		.center_y	= 906,
+		.width		= 36,
+		.height		= 57,
+	},
+	{
+		.code		= KEY_MENU,
+		.center_x	= 104,
+		.center_y	= 906,
+		.width		= 36,
+		.height		= 57,
+	},
+	{
+		.code		= KEY_HOME,
+		.center_x	= 240,
+		.center_y	= 906,
+		.width		= 36,
+		.height		= 57,
+	},
+};
+#endif
 static struct qtm_touch_keyarray_cfg mapphone_key_array_data[] = {
 	{
 		.ctrl		= 0,
