@@ -1,5 +1,5 @@
 /*
-* SHA1 routine optimized to do word accesses rather than byte accesses,
+ * SHA1 routine optimized to do word accesses rather than byte accesses,
  * and to avoid unnecessary copies into the context array.
  *
  * This was based on the git SHA1 implementation.
@@ -7,49 +7,46 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/cryptohash.h>
 #include <linux/bitops.h>
 #include <asm/unaligned.h>
 
-
-
 /*
-* If you have 32 registers or more, the compiler can (and should)
-* try to change the array[] accesses into registers. However, on
-* machines with less than ~25 registers, that won't really work,
-* and at least gcc will make an unholy mess of it.
-*
-* So to avoid that mess which just slows things down, we force
-* the stores to memory to actually happen (we might be better off
-* with a 'W(t)=(val);asm("":"+m" (W(t))' there instead, as
-* suggested by Artur Skawina - that will also make gcc unable to
-* try to do the silly "optimize away loads" part because it won't
-* see what the value will be).
-*
-* Ben Herrenschmidt reports that on PPC, the C version comes close
-* to the optimized asm with this (ie on PPC you don't want that
-* 'volatile', since there are lots of registers).
-*
-* On ARM we get the best code generation by forcing a full memory barrier
-* between each SHA_ROUND, otherwise gcc happily get wild with spilling and
-* the stack frame size simply explode and performance goes down the drain.
-*/
+ * If you have 32 registers or more, the compiler can (and should)
+ * try to change the array[] accesses into registers. However, on
+ * machines with less than ~25 registers, that won't really work,
+ * and at least gcc will make an unholy mess of it.
+ *
+ * So to avoid that mess which just slows things down, we force
+ * the stores to memory to actually happen (we might be better off
+ * with a 'W(t)=(val);asm("":"+m" (W(t))' there instead, as
+ * suggested by Artur Skawina - that will also make gcc unable to
+ * try to do the silly "optimize away loads" part because it won't
+ * see what the value will be).
+ *
+ * Ben Herrenschmidt reports that on PPC, the C version comes close
+ * to the optimized asm with this (ie on PPC you don't want that
+ * 'volatile', since there are lots of registers).
+ *
+ * On ARM we get the best code generation by forcing a full memory barrier
+ * between each SHA_ROUND, otherwise gcc happily get wild with spilling and
+ * the stack frame size simply explode and performance goes down the drain.
+ */
 
 #ifdef CONFIG_X86
-	#define setW(x, val) (*(volatile __u32 *)&W(x) = (val))
+  #define setW(x, val) (*(volatile __u32 *)&W(x) = (val))
 #elif defined(CONFIG_ARM)
-	#define setW(x, val) do { W(x) = (val); __asm__("":::"memory"); } while (0)
+  #define setW(x, val) do { W(x) = (val); __asm__("":::"memory"); } while (0)
 #else
-	#define setW(x, val) (W(x) = (val))
+  #define setW(x, val) (W(x) = (val))
 #endif
 
 /* This "rolls" over the 512-bit array */
 #define W(x) (array[(x)&15])
 
 /*
-* Where do we get the source from? The first 16 iterations get it from
-* the input data, the next mix it from the 512-bit array.
-*/
+ * Where do we get the source from? The first 16 iterations get it from
+ * the input data, the next mix it from the 512-bit array.
+ */
 #define SHA_SRC(t) get_unaligned_be32((__u32 *)data + t)
 #define SHA_MIX(t) rol32(W(t+13) ^ W(t+8) ^ W(t+2) ^ W(t), 1)
 
@@ -179,9 +176,10 @@ void sha_transform(__u32 *digest, const char *data, __u32 *array)
 	T_60_79(77, D, E, A, B, C);
 	T_60_79(78, C, D, E, A, B);
 	T_60_79(79, B, C, D, E, A);
+
 	digest[0] += A;
-	digest[1] += B;	
-	digest[2] += C;	
+	digest[1] += B;
+	digest[2] += C;
 	digest[3] += D;
 	digest[4] += E;
 }
