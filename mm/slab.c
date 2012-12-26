@@ -3113,19 +3113,13 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 	} else {
 		STATS_INC_ALLOCMISS(cachep);
 		objp = cache_alloc_refill(cachep, flags);
-		/*
-		 * the 'ac' may be updated by cache_alloc_refill(),
-		 * and kmemleak_erase() requires its correct value.
-		 */
-		ac = cpu_cache_get(cachep);
 	}
 	/*
 	 * To avoid a false negative, if an object that is in one of the
 	 * per-CPU caches is leaked, we need to make sure kmemleak doesn't
 	 * treat the array pointers as a reference to the object.
 	 */
-	if (objp)
-		kmemleak_erase(&ac->entry[ac->avail]);
+	kmemleak_erase(&ac->entry[ac->avail]);
 	return objp;
 }
 
@@ -3322,7 +3316,7 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
 	cache_alloc_debugcheck_before(cachep, flags);
 	local_irq_save(save_flags);
 
-	if (nodeid == -1)
+	if (unlikely(nodeid == -1))
 		nodeid = numa_node_id();
 
 	if (unlikely(!cachep->nodelists[nodeid])) {
@@ -4559,3 +4553,4 @@ void slab_check_write(void *ptr, unsigned int sz, const char *location)
 	dump_stack();
 }
 #endif
+
