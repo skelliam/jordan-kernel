@@ -467,7 +467,7 @@ static void mapphone_legacy_qtouch_init(void)
 			__func__);
 		goto mapphone_legacy_qtouch_init_ret;
 	}
-
+#ifndef CONFIG_KOBE_BOARD
 	touch_prop = of_get_property(touch_node, DT_PROP_TOUCH_KEYMAP, &len);
 	if (touch_prop && len && (0 == len % sizeof(struct vkey))) {
 			mapphone_ts_platform_data.vkeys.count =
@@ -475,7 +475,7 @@ static void mapphone_legacy_qtouch_init(void)
 			mapphone_ts_platform_data.vkeys.keys =
 				(struct vkey *)touch_prop;
 	}
-
+#endif
 	touch_prop = of_get_property(touch_node, DT_PROP_TOUCH_I2C_ADDRESS,
 		&len);
 	if (touch_prop) {
@@ -553,7 +553,7 @@ static void mapphone_legacy_qtouch_init(void)
 	touch_val = of_get_property(touch_node, DT_PROP_TOUCH_Y_DELTA, &len);
 	if (touch_val && len)
 		mapphone_ts_platform_data.y_delta = *touch_val;
-
+#ifndef CONFIG_KOBE_BOARD
 	touch_prop = of_get_property(touch_node, DT_PROP_TOUCH_T15, &len);
 	if (touch_prop) {
 		mapphone_ts_platform_data.key_array.cfg =
@@ -571,7 +571,7 @@ static void mapphone_legacy_qtouch_init(void)
 		DT_PROP_TOUCH_KEY_ARRAY_COUNT, &len);
 	if (touch_val && len)
 		mapphone_ts_platform_data.key_array.num_keys = *touch_val;
-
+#endif
 	touch_prop = of_get_property(touch_node, DT_PROP_TOUCH_T7, &len);
 	if (touch_prop) {
 		mapphone_ts_platform_data.power_cfg =
