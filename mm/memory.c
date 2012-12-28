@@ -578,7 +578,7 @@ out:
  * covered by this vma.
  */
 
-static inline unsigned long
+static inline void
 copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *vma,
 		unsigned long addr, int *rss)
@@ -592,9 +592,7 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		if (!pte_file(pte)) {
 			swp_entry_t entry = pte_to_swp_entry(pte);
 
-			if (swap_duplicate(entry) < 0)
-				return entry.val;
-
+			swap_duplicate(entry);
 			/* make sure dst_mm is on swapoff's mmlist. */
 			if (unlikely(list_empty(&dst_mm->mmlist))) {
 				spin_lock(&mmlist_lock);
@@ -643,7 +641,6 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 
 out_set_pte:
 	set_pte_at(dst_mm, addr, dst_pte, pte);
-	return 0;
 }
 
 static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
@@ -655,7 +652,6 @@ static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	spinlock_t *src_ptl, *dst_ptl;
 	int progress = 0;
 	int rss[2];
-	swp_entry_t entry = (swp_entry_t){0};
 
 again:
 	rss[1] = rss[0] = 0;
@@ -684,10 +680,7 @@ again:
 			progress++;
 			continue;
 		}
-		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
-				vma, addr, rss);
-		if (entry.val)
-			break;
+		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr, rss);
 		progress += 8;
 	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
 
@@ -697,12 +690,6 @@ again:
 	add_mm_rss(dst_mm, rss[0], rss[1]);
 	pte_unmap_unlock(orig_dst_pte, dst_ptl);
 	cond_resched();
-
-	if (entry.val) {
-		if (add_swap_count_continuation(entry, GFP_KERNEL) < 0)
-			return -ENOMEM;
-		progress = 0;
-	}
 	if (addr != end)
 		goto again;
 	return 0;

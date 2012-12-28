@@ -145,32 +145,28 @@ enum {
 	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
 	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
 	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
-	SWP_CONTINUED	= (1 << 5),	/* swap_map has count continuation */
 					/* add others here before... */
 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
 };
 
 #define SWAP_CLUSTER_MAX 32
 
-#define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
-#define SWAP_MAP_BAD	0x3f	/* Note pageblock is bad, in first swap_map */
-#define SWAP_HAS_CACHE	0x40	/* Flag page is cached, in first swap_map */
-#define SWAP_CONT_MAX	0x7f	/* Max count, in each swap_map continuation */
-#define COUNT_CONTINUED	0x80	/* See swap_map continuation for full count */
-
+#define SWAP_MAP_MAX	0x7ffe
+#define SWAP_MAP_BAD	0x7fff
+#define SWAP_HAS_CACHE  0x8000		/* There is a swap cache of entry. */
+#define SWAP_COUNT_MASK (~SWAP_HAS_CACHE)
 /*
  * The in-memory structure used to track swap areas.
  */
 struct swap_info_struct {
-	unsigned long	flags;		/* SWP_USED etc: see above */
-	signed short	prio;		/* swap priority of this type */
-	signed char	type;		/* strange name for an index */
-	signed char	next;		/* next type on the swap list */
+	unsigned long flags;
+	int prio;			/* swap priority */
+	int next;			/* next entry on swap list */
 	struct file *swap_file;
 	struct block_device *bdev;
-	struct swap_extent first_swap_extent;
+	struct list_head extent_list;
 	struct swap_extent *curr_swap_extent;
-	unsigned char *swap_map;
+	unsigned short *swap_map;
 	unsigned int lowest_bit;
 	unsigned int highest_bit;
 	unsigned int lowest_alloc;	/* while preparing discard cluster */
@@ -202,6 +198,7 @@ extern unsigned int nr_free_pagecache_pages(void);
 
 
 /* linux/mm/swap.c */
+extern void ____lru_cache_add(struct page *, enum lru_list lru, int tail);
 extern void __lru_cache_add(struct page *, enum lru_list lru);
 extern void lru_cache_add_lru(struct page *, enum lru_list lru);
 extern void activate_page(struct page *);
@@ -222,19 +219,9 @@ static inline void lru_cache_add_anon(struct page *page)
 	__lru_cache_add(page, LRU_INACTIVE_ANON);
 }
 
-static inline void lru_cache_add_active_anon(struct page *page)
+static inline void lru_cache_add_file(struct page *page, int tail)
 {
-	__lru_cache_add(page, LRU_ACTIVE_ANON);
-}
-
-static inline void lru_cache_add_file(struct page *page)
-{
-	__lru_cache_add(page, LRU_INACTIVE_FILE);
-}
-
-static inline void lru_cache_add_active_file(struct page *page)
-{
-	__lru_cache_add(page, LRU_ACTIVE_FILE);
+	____lru_cache_add(page, LRU_INACTIVE_FILE, tail);
 }
 
 /* linux/mm/vmscan.c */
@@ -314,17 +301,17 @@ extern long total_swap_pages;
 extern void si_swapinfo(struct sysinfo *);
 extern swp_entry_t get_swap_page(void);
 extern swp_entry_t get_swap_page_of_type(int);
-extern int valid_swaphandles(swp_entry_t, unsigned long *);
-extern int add_swap_count_continuation(swp_entry_t, gfp_t);
-extern int swap_duplicate(swp_entry_t);
+extern void swap_duplicate(swp_entry_t);
 extern int swapcache_prepare(swp_entry_t);
+extern int valid_swaphandles(swp_entry_t, unsigned long *);
 extern void swap_free(swp_entry_t);
 extern void swapcache_free(swp_entry_t, struct page *page);
 extern int free_swap_and_cache(swp_entry_t);
 extern int swap_type_of(dev_t, sector_t, struct block_device **);
 extern unsigned int count_swap_pages(int, int);
-extern sector_t map_swap_page(swp_entry_t, struct block_device **);
+extern sector_t map_swap_page(struct swap_info_struct *, pgoff_t);
 extern sector_t swapdev_block(int, pgoff_t);
+extern struct swap_info_struct *get_swap_info_struct(unsigned);
 extern int reuse_swap_page(struct page *);
 extern int try_to_free_swap(struct page *);
 struct backing_dev_info;
@@ -367,6 +354,8 @@ static inline void mem_cgroup_uncharge_swap(swp_entry_t ent)
 }
 #endif
 
+extern void ltt_dump_swap_files(void *call_data);
+
 #else /* CONFIG_SWAP */
 
 #define nr_swap_pages				0L
@@ -389,14 +378,8 @@ static inline void show_swap_cache_info(void)
 #define free_swap_and_cache(swp)	is_migration_entry(swp)
 #define swapcache_prepare(swp)		is_migration_entry(swp)
 
-static inline int add_swap_count_continuation(swp_entry_t swp, gfp_t gfp_mask)
+static inline void swap_duplicate(swp_entry_t swp)
 {
-	return 0;
-}
-
-static inline int swap_duplicate(swp_entry_t swp)
-{
-	return 0;
 }
 
 static inline void swap_free(swp_entry_t swp)
@@ -479,7 +462,10 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
 {
 }
 
+static inline void ltt_dump_swap_files(void *call_data)
+{
+}
+
 #endif /* CONFIG_SWAP */
 #endif /* __KERNEL__*/
 #endif /* _LINUX_SWAP_H */
-
