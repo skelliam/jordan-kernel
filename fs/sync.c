@@ -262,7 +262,6 @@ int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
 }
 EXPORT_SYMBOL(vfs_fsync);
 
-/*
 static int do_fsync(unsigned int fd, int datasync)
 {
 	struct file *file;
@@ -274,16 +273,16 @@ static int do_fsync(unsigned int fd, int datasync)
 		fput(file);
 	}
 	return ret;
-} */
+}
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
-	return 0;
+	return do_fsync(fd, 0);
 }
 
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
-	return 0;
+	return do_fsync(fd, 1);
 }
 
 /**
@@ -296,10 +295,11 @@ SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
  */
 int generic_write_sync(struct file *file, loff_t pos, loff_t count)
 {
-	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
+	if (!(file->f_flags & O_DSYNC) && !IS_SYNC(file->f_mapping->host))
 		return 0;
 	return vfs_fsync_range(file, file->f_path.dentry, pos,
-			       pos + count - 1, 1);
+			       pos + count - 1,
+			       (file->f_flags & __O_SYNC) ? 0 : 1);
 }
 EXPORT_SYMBOL(generic_write_sync);
 
@@ -353,10 +353,9 @@ EXPORT_SYMBOL(generic_write_sync);
 SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 				unsigned int flags)
 {
-	/*
 	int ret;
 	struct file *file;
-	loff_t endbyte;			
+	loff_t endbyte;			/* inclusive */
 	int fput_needed;
 	umode_t i_mode;
 
@@ -375,12 +374,17 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 
 	if (sizeof(pgoff_t) == 4) {
 		if (offset >= (0x100000000ULL << PAGE_CACHE_SHIFT)) {
-			
+			/*
+			 * The range starts outside a 32 bit machine's
+			 * pagecache addressing capabilities.  Let it "succeed"
+			 */
 			ret = 0;
 			goto out;
 		}
 		if (endbyte >= (0x100000000ULL << PAGE_CACHE_SHIFT)) {
-			
+			/*
+			 * Out to EOF
+			 */
 			nbytes = 0;
 		}
 	}
@@ -388,7 +392,7 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 	if (nbytes == 0)
 		endbyte = LLONG_MAX;
 	else
-		endbyte--;		
+		endbyte--;		/* inclusive */
 
 	ret = -EBADF;
 	file = fget_light(fd, &fput_needed);
@@ -405,8 +409,7 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 out_put:
 	fput_light(file, fput_needed);
 out:
-	return ret; */
-	return 0;
+	return ret;
 }
 #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
 asmlinkage long SyS_sync_file_range(long fd, loff_t offset, loff_t nbytes,
@@ -450,9 +453,7 @@ int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
 
 	ret = 0;
 	if (flags & SYNC_FILE_RANGE_WAIT_BEFORE) {
-		ret = wait_on_page_writeback_range(mapping,
-					offset >> PAGE_CACHE_SHIFT,
-					endbyte >> PAGE_CACHE_SHIFT);
+		ret = filemap_fdatawait_range(mapping, offset, endbyte);
 		if (ret < 0)
 			goto out;
 	}
@@ -465,11 +466,10 @@ int do_sync_mapping_range(struct address_space *mapping, loff_t offset,
 	}
 
 	if (flags & SYNC_FILE_RANGE_WAIT_AFTER) {
-		ret = wait_on_page_writeback_range(mapping,
-					offset >> PAGE_CACHE_SHIFT,
-					endbyte >> PAGE_CACHE_SHIFT);
+		ret = filemap_fdatawait_range(mapping, offset, endbyte);
 	}
 out:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(do_sync_mapping_range);
+
