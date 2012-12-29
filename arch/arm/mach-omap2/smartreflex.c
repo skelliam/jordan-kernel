@@ -1827,24 +1827,22 @@ static void sr1_init(struct omap_sr *sr)
 		sr->sr_errconfig_value |= ERRCONFIG_36XX_VPBOUNDINTEN |
 					ERRCONFIG_36XX_VPBOUNDINTST;
 		if (omap_rev_id() == OMAP_3630_1200) {
-			sr->opp_nvalue[5] =
+			sr->opp_nvalue[4] =
 			omap_ctrl_readl(OMAP36XX_CONTROL_FUSE_OPP5_VDD1);
-				sr->opp_nvalue[5] = ApplyAdj(
-					sr->opp_nvalue[5],
+				sr->opp_nvalue[4] = ApplyAdj(
+					sr->opp_nvalue[4],
 					3.0*12.5*NUM_STEPS_MARGIN_1_2G,
 					2.6*12.5*NUM_STEPS_MARGIN_1_2G);
 		}
-		sr->opp_nvalue[4] =
-		   omap_ctrl_readl(OMAP36XX_CONTROL_FUSE_OPP5_VDD1);
-		if (sr->opp_nvalue[4] != 0x0) {
+		sr->opp_nvalue[3] =
+		   omap_ctrl_readl(OMAP36XX_CONTROL_FUSE_OPP4_VDD1);
+		if (sr->opp_nvalue[3] != 0x0) {
 			pr_info("SR1 : Fused Nvalues for %d OPP\n",
 							sr->num_opp);
-			sr->opp_nvalue[4] = ApplyAdj(
+			sr->opp_nvalue[3] = ApplyAdj(
 				sr->opp_nvalue[3],
 				3.0*12.5*NUM_STEPS_MARGIN_1_0G,
 				2.6*12.5*NUM_STEPS_MARGIN_1_0G);
-			sr->opp_nvalue[3] =
-			   omap_ctrl_readl(OMAP36XX_CONTROL_FUSE_OPP4_VDD1);
 			sr->opp_nvalue[2] =
 			   omap_ctrl_readl(OMAP36XX_CONTROL_FUSE_OPP3_VDD1);
 			sr->opp_nvalue[1] =
@@ -1878,17 +1876,15 @@ static void sr1_init(struct omap_sr *sr)
 		if (omap_rev_id() == OMAP_3630_1200) {
 			if (sr->opp_nvalue[4]) {
 				pr_info("VDD1 - OPP5 -  1.2G Nvalue = 0x%X\n",
-					sr->opp_nvalue[5]);
+					sr->opp_nvalue[4]);
 			} else
 				pr_info("VDD1 - OPP5 -  Not Fused for \
 					 OMAP3630 1.2G Chip.\n");
 		}
-		pr_info("VDD1 - OPP5 -  1G Nvalue = 0x%X\n",
-				sr->opp_nvalue[4]);
-		pr_info("VDD1 - OPP4 - 800 Nvalue = 0x%X\n",
+		pr_info("VDD1 - OPP4 -  1G Nvalue = 0x%X\n",
 				sr->opp_nvalue[3]);
-		pr_info("VDD1 - OPP3 - 720 Nvalue = 0x%X\n",
-				sr->opp_nvalue[3]);
+		pr_info("VDD1 - OPP3 - 800 Nvalue = 0x%X\n",
+				sr->opp_nvalue[2]);
 		pr_info("VDD1 - OPP2 - 600 Nvalue = 0x%X\n",
 				sr->opp_nvalue[1]);
 		pr_info("VDD1 - OPP1 - 300 Nvalue = 0x%X\n",
