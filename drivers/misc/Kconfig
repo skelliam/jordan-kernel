@@ -421,4 +421,10 @@ source "drivers/misc/netmux/Kconfig"
 source "drivers/misc/netmux_linkdriver/Kconfig"
 source "drivers/misc/camera_misc/Kconfig"
 
+config FSYNC_CONTROL
+	bool "Support for FSync Control"
+	default y
+	help
+	  Say Y here to enable FSync Control
+
 endif # MISC_DEVICES

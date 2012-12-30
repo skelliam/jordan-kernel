@@ -18,6 +18,10 @@
 #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
 			SYNC_FILE_RANGE_WAIT_AFTER)
 
+#ifdef CONFIG_FSYNC_CONTROL
+extern bool fsynccontrol_fsync_enabled();
+#endif
+
 /*
  * Do the filesystem syncing work. For simple filesystems
  * writeback_inodes_sb(sb) just dirties buffers with inodes so we have to
@@ -169,6 +173,11 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
 	struct super_block * sb;
 	int ret, err;
 
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
 	/* sync the inode to buffers */
 	ret = write_inode_now(inode, 0);
 
@@ -207,6 +216,11 @@ int vfs_fsync_range(struct file *file, struct dentry *dentry, loff_t start,
 	const struct file_operations *fop;
 	struct address_space *mapping;
 	int err, ret;
+
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
 
 	/*
 	 * Get mapping and operations from the file in case we have
@@ -258,6 +272,11 @@ EXPORT_SYMBOL(vfs_fsync_range);
  */
 int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
 {
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
 	return vfs_fsync_range(file, dentry, 0, LLONG_MAX, datasync);
 }
 EXPORT_SYMBOL(vfs_fsync);
@@ -266,6 +285,11 @@ static int do_fsync(unsigned int fd, int datasync)
 {
 	struct file *file;
 	int ret = -EBADF;
+
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
 
 	file = fget(fd);
 	if (file) {
@@ -277,11 +301,21 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
 	return do_fsync(fd, 0);
 }
 
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
 	return do_fsync(fd, 1);
 }
 
@@ -295,6 +329,12 @@ SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
  */
 int generic_write_sync(struct file *file, loff_t pos, loff_t count)
 {
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
+
 	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
 		return 0;
 	return vfs_fsync_range(file, file->f_path.dentry, pos,
@@ -357,6 +397,11 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 	loff_t endbyte;			/* inclusive */
 	int fput_needed;
 	umode_t i_mode;
+
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
 
 	ret = -EINVAL;
 	if (flags & ~VALID_FLAGS)
