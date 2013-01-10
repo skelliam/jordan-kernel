@@ -427,4 +427,10 @@ config FSYNC_CONTROL
 	help
 	  Say Y here to enable FSync Control
 
+config SMOOTHUI
+	bool "Support for Smooth UI"
+	default y
+	help
+	  Say Y here to enable Smooth UI
+
 endif # MISC_DEVICES
