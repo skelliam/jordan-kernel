@@ -37,6 +37,11 @@
 #define MIN_FREQUENCY_UP_THRESHOLD		(11)
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
 
+#ifdef CONFIG_SMOOTHUI
+extern unsigned int mapphone_touch_reset;
+extern bool smooth_ui(void);
+#endif
+
 /*
  * The polling frequency of this governor depends on the capability of
  * the processor. Default polling frequency is 1000 times the transition
@@ -82,6 +87,7 @@ struct cpu_dbs_info_s {
 	unsigned int freq_lo;
 	unsigned int freq_lo_jiffies;
 	unsigned int freq_hi_jiffies;
+	unsigned int rate_mult;
 	int cpu;
 	unsigned int sample_type:1;
 	/*
@@ -108,6 +114,7 @@ static struct dbs_tuners {
 	unsigned int up_threshold;
 	unsigned int down_differential;
 	unsigned int ignore_nice;
+	unsigned int sampling_down_factor;
 	unsigned int powersave_bias;
 } dbs_tuners_ins = {
 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
@@ -220,6 +227,17 @@ static void ondemand_powersave_bias_init(void)
 }
 
 /************************** sysfs interface ************************/
+
+static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+{
+	if (dbs_tuners_ins.powersave_bias)
+		freq = powersave_bias_target(p, freq, CPUFREQ_RELATION_H);
+	else if (p->cur == p->max)
+		return;
+
+	__cpufreq_driver_target(p, freq, dbs_tuners_ins.powersave_bias ?
+			CPUFREQ_RELATION_L : CPUFREQ_RELATION_H);
+}
 
 static ssize_t show_sampling_rate_max(struct kobject *kobj,
 				      struct attribute *attr, char *buf)
@@ -520,8 +538,22 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	}
 
 	/* Check for frequency increase */
+#ifdef CONFIG_SMOOTHUI
+	if(smooth_ui() && mapphone_touch_reset){
+		if(policy->cur < policy->max && policy->max <= policy->max)
+			dbs_freq_increase(policy, policy->max);
+	else if(policy->cur > policy->max){
+		this_dbs_info->rate_mult = dbs_tuners_ins.sampling_down_factor;
+		dbs_freq_increase(policy, policy->max);
+	}
+	else
+		dbs_freq_increase(policy, policy->max);
+  		return;
+	}
+	else
+#endif
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
-		/* if we are already at full speed then break out early */
+	/* If switching to max speed, apply sampling_down_factor */
 		if (!dbs_tuners_ins.powersave_bias) {
 			if (policy->cur == policy->max)
 				return;

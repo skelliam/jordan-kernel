@@ -1,10 +1,13 @@
-/* drivers/misc/fsync_control.c
+/* drivers/misc/smooth_ui.c
  *
  * Copyright 2012  Ezekeel
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
+ *
+ *
+ * Based on the FSync_control by Ezekeel, changed by Blechdose for Motorola Defy
  */
 
 #include <linux/init.h>
