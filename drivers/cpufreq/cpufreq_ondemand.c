@@ -538,6 +538,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	}
 
 	/* Check for frequency increase */
+/* TODO: Need the right Touch event!
 #ifdef CONFIG_SMOOTHUI
 	if(smooth_ui() && mapphone_touch_reset){
 		if(policy->cur < policy->max && policy->max <= policy->max)
@@ -551,7 +552,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
   		return;
 	}
 	else
-#endif
+#endif */
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
 	/* If switching to max speed, apply sampling_down_factor */
 		if (!dbs_tuners_ins.powersave_bias) {
