@@ -356,8 +356,8 @@ void dump_tasks(const struct mem_cgroup *mem)
 
 		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %8lu %3d %3d %s\n",
 			p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
-			get_mm_counter(mm, file_rss),
-			get_mm_counter(mm, anon_rss),
+			//get_mm_counter(mm, file_rss),
+			//get_mm_counter(mm, anon_rss),
 			(int)task_cpu(p), p->signal->oom_adj,
 			p->comm);
 
