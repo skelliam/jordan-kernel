@@ -12,7 +12,6 @@
  */
 #include <linux/sched.h>
 #include <linux/mm.h>
-#include <linux/dma-mapping.h>
 #include <asm/mach/arch.h>
 #include <asm/thread_info.h>
 #include <asm/memory.h>
@@ -113,9 +112,5 @@ int main(void)
 #ifdef MULTI_PABORT
   DEFINE(PROCESSOR_PABT_FUNC,	offsetof(struct processor, _prefetch_abort));
 #endif
-  BLANK();
-  DEFINE(DMA_BIDIRECTIONAL,	DMA_BIDIRECTIONAL);
-  DEFINE(DMA_TO_DEVICE,		DMA_TO_DEVICE);
-  DEFINE(DMA_FROM_DEVICE,	DMA_FROM_DEVICE);
   return 0; 
 }
