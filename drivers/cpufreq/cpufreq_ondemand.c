@@ -38,7 +38,7 @@
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
 
 #ifdef CONFIG_SMOOTHUI
-extern unsigned int mapphone_touch_reset;
+extern bool input_event(void);
 extern bool smooth_ui(void);
 #endif
 
@@ -538,9 +538,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	}
 
 	/* Check for frequency increase */
-/* TODO: Need the right Touch event!
+/* TODO: Need the right Touch event! */
 #ifdef CONFIG_SMOOTHUI
-	if(smooth_ui() && mapphone_touch_reset){
+	if(smooth_ui() && input_event()){
 		if(policy->cur < policy->max && policy->max <= policy->max)
 			dbs_freq_increase(policy, policy->max);
 	else if(policy->cur > policy->max){
@@ -552,7 +552,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
   		return;
 	}
 	else
-#endif */
+#endif 
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
 	/* If switching to max speed, apply sampling_down_factor */
 		if (!dbs_tuners_ins.powersave_bias) {
