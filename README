@@ -1,3 +1,18 @@
+#############################################################################
+		Documentation about JellyX Kernel by Blechd0se
+
+How to enable/disable FSync?
+
+	Type in Terminal: echo 1 > /sys/class/misc/fsynccontrol/fsync_enabled 
+	(1 = enabled (stability), 0 = disabled (default, performance))
+
+Should I use the BFS or CFS Version?
+	
+	It's upto you! Try both and decide for your own. Generally BFS was designed
+	for smaller Systems and may improve performance.
+
+
+
 	Linux kernel release 2.6.xx <http://kernel.org/>
 
 These are the release notes for Linux version 2.6.  Read them carefully,
