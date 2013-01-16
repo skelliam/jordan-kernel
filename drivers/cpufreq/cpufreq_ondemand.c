@@ -541,6 +541,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 /* TODO: Need the right Touch event! */
 #ifdef CONFIG_SMOOTHUI
 	if(smooth_ui() && input_event()){
+		printk(KERN_ERR "Smooth_UI and Input_Event true\n");
 		if(policy->cur < policy->max && policy->max <= policy->max)
 			dbs_freq_increase(policy, policy->max);
 	else if(policy->cur > policy->max){
