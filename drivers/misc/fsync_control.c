@@ -13,6 +13,7 @@
 
 #define FSYNCCONTROL_VERSION 1
 
+// Enabled by default
 static bool fsync_enabled = true;
 
 bool fsynccontrol_fsync_enabled(void)

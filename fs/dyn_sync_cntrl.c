@@ -29,10 +29,11 @@
  */
 static DEFINE_MUTEX(fsync_mutex);
 
-bool early_suspend_active = false;
+bool early_suspend_active = true;
 #ifdef CONFIG_FSYNC_CONTROL
 extern bool fsynccontrol_fsync_enabled(void);
 #endif
+// Enabled by default, because FSync is enabled by default
 static bool dyn_fsync_active = true;
 
 
@@ -46,11 +47,13 @@ static ssize_t dyn_fsync_active_store(struct kobject *kobj, struct kobj_attribut
 	unsigned int data;
 
 	if(sscanf(buf, "%u\n", &data) == 1) {
-		if (data == 1) {
+		// Dynamic should only be enabled when Fsync is on
+		if (data == 1 && fsynccontrol_fsync_enabled()) {
 			printk(KERN_WARNING "%s: dynamic fsync enabled\n", __FUNCTION__);
 			dyn_fsync_active = true;
 		}
-		else if (data == 0) {
+		// Disable it, when Fsync is off in general
+		else if (data == 0 && !fsynccontrol_fsync_enabled()) {
 			printk(KERN_WARNING  "%s: dyanamic fsync disabled\n", __FUNCTION__);
 			dyn_fsync_active = false;
 		}
@@ -58,16 +61,6 @@ static ssize_t dyn_fsync_active_store(struct kobject *kobj, struct kobj_attribut
 			printk(KERN_WARNING "%s: bad value: %u\n", __FUNCTION__, data);
 	} else
 		printk(KERN_WARNING "%s: unknown input!\n", __FUNCTION__);
-	
-	// TODO: Put this in the Code above
-	if (fsynccontrol_fsync_enabled() == true) {
-		dyn_fsync_active = true;
-		printk(KERN_WARNING "%s: dynamic fsync enabled\n", __FUNCTION__);
-	}
-	else {
-		dyn_fsync_active = false;
-		printk(KERN_WARNING "%s: dynamic fsync disabled, because FSYNC is OFF\n", __FUNCTION__);
-	}
 	
 	return count;
 }
