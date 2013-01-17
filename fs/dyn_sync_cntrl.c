@@ -47,26 +47,26 @@ static ssize_t dyn_fsync_active_store(struct kobject *kobj, struct kobj_attribut
 
 	if(sscanf(buf, "%u\n", &data) == 1) {
 		if (data == 1) {
-			pr_info("%s: dynamic fsync enabled\n", __FUNCTION__);
+			printk(KERN_WARNING "%s: dynamic fsync enabled\n", __FUNCTION__);
 			dyn_fsync_active = true;
 		}
 		else if (data == 0) {
-			pr_info("%s: dyanamic fsync disabled\n", __FUNCTION__);
+			printk(KERN_WARNING  "%s: dyanamic fsync disabled\n", __FUNCTION__);
 			dyn_fsync_active = false;
 		}
 		else
-			pr_info("%s: bad value: %u\n", __FUNCTION__, data);
+			printk(KERN_WARNING "%s: bad value: %u\n", __FUNCTION__, data);
 	} else
-		pr_info("%s: unknown input!\n", __FUNCTION__);
+		printk(KERN_WARNING "%s: unknown input!\n", __FUNCTION__);
 	
 	// TODO: Put this in the Code above
 	if (fsynccontrol_fsync_enabled() == true) {
 		dyn_fsync_active = true;
-		pr_info("%s: dynamic fsync enabled\n", __FUNCTION__);
+		printk(KERN_WARNING "%s: dynamic fsync enabled\n", __FUNCTION__);
 	}
 	else {
 		dyn_fsync_active = false;
-		pr_info("%s: dynamic fsync disabled, because FSYNC is OFF\n", __FUNCTION__);
+		printk(KERN_WARNING "%s: dynamic fsync disabled, because FSYNC is OFF\n", __FUNCTION__);
 	}
 	
 	return count;

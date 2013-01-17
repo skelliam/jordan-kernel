@@ -662,7 +662,7 @@ static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	spinlock_t *src_ptl, *dst_ptl;
 	int progress = 0;
 	int rss[NR_MM_COUNTERS];
-	swp_entry_t entry = (swp_entry_t){0};
+	//swp_entry_t entry = (swp_entry_t){0};
 
 again:
 	init_rss_vec(rss);
