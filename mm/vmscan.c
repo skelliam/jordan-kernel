@@ -1760,13 +1760,6 @@ static inline int effective_sc_prio(struct task_struct *p)
 	return 0;
 }
 
-static void set_kswapd_nice(struct task_struct *kswapd, int active)
-{
-	long nice = effective_sc_prio(current);
-
-	if (task_nice(kswapd) > nice || !active)
-		set_user_nice(kswapd, nice);
-}
 
 /*
  * This is the direct reclaim path, for page-allocating processes.  We only

@@ -1581,7 +1581,7 @@ static int do_journal_get_write_access(handle_t *handle,
 /*
  * Truncate blocks that were not used by write. We have to truncate the
  * pagecache as well so that corresponding buffers get properly unmapped.
- */
+ */ 
 static void ext4_truncate_failed_write(struct inode *inode)
 {
 	truncate_inode_pages(inode->i_mapping, inode->i_size);

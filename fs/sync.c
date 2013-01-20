@@ -21,6 +21,10 @@
 #ifdef CONFIG_FSYNC_CONTROL
 extern bool fsynccontrol_fsync_enabled(void);
 #endif
+#ifdef CONFIG_DYNAMIC_FSYNC
+extern bool early_suspend_active;
+#endif
+
 
 /*
  * Do the filesystem syncing work. For simple filesystems
@@ -93,7 +97,7 @@ EXPORT_SYMBOL_GPL(sync_filesystem);
  * flags again, which will cause process A to resync everything.  Fix that with
  * a local mutex.
  */
-static void sync_filesystems(int wait)
+void sync_filesystems(int wait)
 {
 	struct super_block *sb;
 	static DEFINE_MUTEX(mutex);
@@ -178,6 +182,12 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
 	    return 0;
 #endif
 
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else {
+#endif
+
 	/* sync the inode to buffers */
 	ret = write_inode_now(inode, 0);
 
@@ -191,6 +201,11 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
 	if (!ret)
 		ret = err;
 	return ret;
+
+#ifdef CONFIG_DYNAMIC_FSYNC
+	}
+#endif
+
 }
 EXPORT_SYMBOL(file_fsync);
 
@@ -213,6 +228,12 @@ EXPORT_SYMBOL(file_fsync);
 int vfs_fsync_range(struct file *file, struct dentry *dentry, loff_t start,
 		    loff_t end, int datasync)
 {
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else {
+#endif
+
 	const struct file_operations *fop;
 	struct address_space *mapping;
 	int err, ret;
@@ -254,6 +275,9 @@ int vfs_fsync_range(struct file *file, struct dentry *dentry, loff_t start,
 
 out:
 	return ret;
+#ifdef CONFIG_DYNAMIC_FSYNC
+	}
+#endif
 }
 EXPORT_SYMBOL(vfs_fsync_range);
 
@@ -301,6 +325,11 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else
+#endif
 #ifdef CONFIG_FSYNC_CONTROL
 	if (!fsynccontrol_fsync_enabled())
 	    return 0;
@@ -311,6 +340,11 @@ SYSCALL_DEFINE1(fsync, unsigned int, fd)
 
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else
+#endif
 #ifdef CONFIG_FSYNC_CONTROL
 	if (!fsynccontrol_fsync_enabled())
 	    return 0;
@@ -333,12 +367,20 @@ int generic_write_sync(struct file *file, loff_t pos, loff_t count)
 	if (!fsynccontrol_fsync_enabled())
 	    return 0;
 #endif
-
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else {
+#endif
 
 	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
 		return 0;
 	return vfs_fsync_range(file, file->f_path.dentry, pos,
 			       pos + count - 1, 1);
+
+#ifdef CONFIG_DYNAMIC_FSYNC
+	}
+#endif
 }
 EXPORT_SYMBOL(generic_write_sync);
 
@@ -403,6 +445,12 @@ SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
 	    return 0;
 #endif
 
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!early_suspend_active)
+		return 0;
+	else {
+#endif
+
 	ret = -EINVAL;
 	if (flags & ~VALID_FLAGS)
 		goto out;
@@ -454,6 +502,9 @@ out_put:
 	fput_light(file, fput_needed);
 out:
 	return ret;
+#ifdef CONFIG_DYNAMIC_FSYNC
+	}
+#endif
 }
 #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
 asmlinkage long SyS_sync_file_range(long fd, loff_t offset, loff_t nbytes,
